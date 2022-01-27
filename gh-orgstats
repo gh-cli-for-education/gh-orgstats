@@ -25,6 +25,7 @@ set -e
 DIR="$(dirname "$0")"
 . "$DIR/helper_functions"
 
+ORG=$(gh pwd)
 # Parse arguments
 # Solution borrowed from https://unix.stackexchange.com/a/580258
 while [ $# -gt 0 ]
@@ -33,25 +34,25 @@ do
         --org*|-o*)
             if [[ "$1" != *=* ]]; then shift; fi
             ORG="${1#*=}"
-            ;;
+        ;;
         --stats*|-s*)
             if [[ "$1" != *=* ]]; then shift; fi
             STATS="${1#*=}"
-            ;;
+        ;;
         --plain*|-p*)
             PLAIN=0
-            ;;
+        ;;
         --json*|-j*)
             JSON=0
-            ;;
+        ;;
         --help|-h)
             get_help
             exit 0
-            ;;
+        ;;
         *)
             >&2 printf "Error: Invalid argument\n"
             exit 1
-            ;;
+        ;;
     esac
     shift
 done
@@ -65,12 +66,17 @@ fi
 if [[ $STATS == *"repos"* ]]
 then
     value=$(get_repos $ORG)
-
+    
     if [ ! -z $JSON ]
     then
         JSON_FMT+="\"repos\": $value,"
     else
-        if [ -z $PLAIN ]; then printf "\033[32m✓\033[0m ${value} repositories\n"; else echo $value;fi
+        if [ -z $PLAIN ];
+        then
+            printf "\033[32m✓\033[0m ${value} repositories\n";
+        else
+            echo $value;
+        fi
     fi
 fi
 
@@ -78,12 +84,17 @@ fi
 if [[ $STATS == *"open_issues"* ]]
 then
     value=$(get_open_issues $ORG)
-
+    
     if [ ! -z $JSON ]
     then
         JSON_FMT+="\"open_issues\": $value,"
     else
-        if [ -z $PLAIN ]; then printf "\033[32m✓\033[0m ${value} issues are marked as \"open\"\n"; else echo $value;fi
+        if [ -z $PLAIN ]; 
+        then
+            printf "\033[32m✓\033[0m ${value} issues are marked as \"open\"\n";
+        else
+            echo $value;
+        fi
     fi
 fi
 
@@ -91,14 +102,19 @@ fi
 if [[ $STATS == *"closed_issues"* ]]
 then
     value=$(get_closed_issues $ORG)
-
+    
     if [ ! -z $JSON ]
     then
-        JSON_FMT+="\"closed_issues\": $value,"
+        JSON_FMT+="\"closed_issues\": $value"
     else
-        if [ -z $PLAIN ]; then printf "\033[32m✓\033[0m ${value} issues are marked as \"closed\"\n"; else echo $value;fi
+        if [ -z $PLAIN ]; 
+        then 
+          printf "\033[32m✓\033[0m ${value} issues are marked as \"closed\"\n"; 
+        else 
+          echo $value;
+        fi
     fi
 fi
 
 # Concatenate to json
-if [ ! -z $JSON ];then echo "{${JSON_FMT::-1}}"|jq .;fi
+if [ ! -z $JSON ];then echo "{${JSON_FMT}}";fi
